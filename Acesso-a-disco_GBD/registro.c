@@ -1,153 +1,246 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "size.h"
 #include "registro.h"
-#define FILE_SIZE 42949672960
-#define QTD_REG 858993459
-
-struct registro {
-  int nseq;
-  char text[46];
-}
+#include "mtwister.h"
 
 // uma chamada de seed apenas!
-int srand((unsigned) time(&t));
+int SEED_SETTED;
 
-FILE * CREATE_HEAP_FILE(long int nro_registros) {
+void SEET_SEED_(){
+  srand(time(NULL));
+  SEED_SETTED = rand() + 1;
+}
+
+
+void RANDOM_REG_(char* reg_text){
+  char diff = 'Z' - 'A';
+  for(int i = 0; i < TEXT_SIZE; i++)
+    reg_text[i] = 'A' + rand() % diff;
+}
+
+int CREATE_HEAP_FILE(entry_number_t nro_registros){
   // Abre arquivo (escrita)
-  FILE * fp;
-  fp = fopen ("arquivo.txt", "w");
-  if(fp == NULL) {
-    return NULL;
-  }
+  FILE *fp;
+  fp = fopen("arquivo.txt", "w");
+  if(fp == NULL) return 0;
 
-  reg registro;
-  for(int i = 0; i < nro_registros; i++) {
+  if(!SEED_SETTED) SEET_SEED_();
+
+  struct registro reg;
+  for(entry_number_t i = 0; i < nro_registros; i++){
     // Preenche registro
     reg.nseq = i;
-    reg.text = "FUNCAO_MANEIRA";
+    RANDOM_REG_(reg.text);
 
     // Insere registro no arquivo
-    fwrite(&reg, sizeof(struct registro), 1, fp);
+    if(!fwrite(&reg, sizeof(struct registro), 1, fp)){
+      fclose(fp);
+      remove("arquivo.txt");
+      return 0;
+    }
   }
 
-  return fp;
+  fclose(fp);
+
+  return 1;
 }
 
 
-reg READ_RANDOM(FILE *arq, int nseq) {
-  // Teste 0 <= NSEQ <= nro_registros
-  if(nsek > ultimo_nseq(arq) || nsek < 0) {
-    printf("NSEQ Invalido\n");
-    return NULL;
-  }
+int READ_REG(FILE *arq, entry_number_t nseq, Registro reg){
+  if(arq == NULL || reg == NULL || nseq < 0) return 0;
+
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
+
+  // Se o numero sequencial for maior ou
+  // igual a qtd acima, nseq invalido
+  if(nseq >= rqtd) return 0;
 
   // Seta o Stream para uma posição nseq
-  int offset = nseq * sizeof(struct registro)
-  offset -= sizeof(struct registro);
-  int flag = fseek(arq, offset, SEEK_SET);
+  fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
 
   // le o registro
-  reg registro;
+  struct registro registro;
+  if(!fread(&registro, sizeof(struct registro), 1, arq)) return 0;
+
+  *reg = registro;
+
+  rewind(arq);
+
+  return 1;
+}
+
+int READ_RANDOM(FILE *arq, Registro reg){
+  if(arq == NULL || reg == NULL) return 0;
+
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
+
+  if(!SEED_SETTED) SEET_SEED_();
+
+  // Pega um aleatorio em [0..1] (MersenneTwister)
+  MTRand r = seedRand(SEED_SETTED);
+  getRand(&r);
+  
+  // Acha nseq aleatorio
+  entry_number_t nseq = floor((rqtd - 1) * r);
+
+  // Le um registro aleatorio
+  READ_REG(arq, nseq, reg);
+
+  return 1;
+}
+
+int ISRT_AT_END(FILE *arq){
+  if(arq == NULL) return 0;
+
+  // Seta stream para o ultimo registro
+  fseek(arq, - sizeof(struct registro), SEEK_END);
+
+  // le o ultimo registro
+  struct registro reg;
   fread(&reg, sizeof(struct registro), 1, arq);
 
-  // Printa o registro
-  printf("NSEQ: %d\n TEXT: %s\n\n", reg.nseq, reg.text);
-  return reg
-}
-
-FILE * ISRT_AT_END(FILE *arq) {
-  // Pega NSEQ do ultimo
-  int ultimo = ultimo_nseq(arq);
-
-  // Seta Stream para final do arquivo
-  fseek(arq, 0L, SEEK_END);
-
   // Escreve o registro
-  reg registro;
-  reg.nseq = ultimo + 1;
-  reg.text = "FUNCAO_MANEIRA";
-  fwrite(&reg, sizeof(struct registro), 1, arq);
+  reg.nseq++;
+  RANDOM_REG_(reg.text);
+  if(!fwrite(&reg, sizeof(struct registro), 1, arq)) return 0;
 
-  return arq;
+  rewind(arq);
+  return 1;
 }
 
-FILE * UPDATE_RANDOM(FILE *arq, int nseq, int novo_texto) {
-  // Teste 0 <= NSEQ <= nro_registros
-  if(nsek > ultimo_nseq(arq) || nsek < 0) {
-    printf("NSEQ Invalido\n");
-    return arq;
-  }
+int UPDATE_REG(FILE *arq, Registro reg){
+  if(arq == NULL || reg == NULL || nseq < 0) return 0;
 
-  // Seta o Stream para uma posição nseq
-  int offset = nseq * sizeof(struct registro)
-  int flag = fseek(arq, offset, SEEK_SET);
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
 
-  // sobrescreve o registro
-  reg registro;
-  reg.nseq = nseq;
-  reg.text = novo_texto;
-  fwrite(&reg, sizeof(struct registro), 1, arq);
+  // Se nseq eh maior ou igual a rqtd, invalido
+  if(reg->nseq >= rqtd) return 0;
 
-  return arq;
+  fseek(arq, reg->nseq * sizeof(struct registro), SEEK_SET);
+  if(!fwrite(reg, sizeof(struct registro), 1, arq)) return 0;
+
+  rewind(arq);
+
+  return 1;
 }
 
-FILE * DELETE_RANDOM(FILE *arq, int nseq) {
-  // Teste 0 <= NSEQ <= nro_registros
-  if(nsek > ultimo_nseq(arq) || nsek < 0) {
-    printf("NSEQ Invalido\n");
-    return arq;
-  }
+int UPDATE_RANDOM(FILE *arq, Registro reg){
+  if(arq == NULL || reg == NULL) return 0;
 
-  // Seta o Stream para uma posição nseq
-  int offset = nseq * sizeof(struct registro)
-  int flag = fseek(arq, offset, SEEK_SET);
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
 
-  // até o fim do arquivo:
-    // Pega o prox registro,
-    // Subtrai 1 do nseq
-    // Guarda na posicao atual
-    // Avanca 1 registro
-  // LEIO -> VOLTO -> SOBRESCREVO -> AVANÇO (LER e ESCREVER avanca o Stream)
-  reg registro;
-  while(!feof(arq)) {
-    fread(&reg, sizeof(struct registro), 1, arq);
-    reg.nseq -= 1;
+  if(!SEED_SETTED) SEET_SEED_();
 
-    offset -= sizeof(struct registro);
-    fseek(arq, offset, SEEK_SET);
+  // Pega um aleatorio em [0..1] (MersenneTwister)
+  MTRand r = seedRand(SEED_SETTED);
+  getRand(&r);
+  
+  // Acha nseq aleatorio
+  entry_number_t nseq = floor((rqtd - 1) * r);
 
-    fwrite(&reg, sizeof(struct registro), 1, arq);
+  // Registro aleatorio
+  reg->nseq = nseq;
+  RANDOM_REG_(reg->text);
 
-    offset += 2*(sizeof(struct registro));
-  }
+  // Update um registro aleatorio
+  READ_REG(arq, nseq, reg);
 
-  // truncate p/ remover os bytes remanescentes
-  long int new_length = file_size(arq) - sizeof(struct registro);
-  ftruncate(fileno(arq), new_length);
-
-  return arq;
+  return 1;
 }
 
-long int file_size(FILE *arq) {
-  // Seek até o fim do arquivo
-  fseek(arq, 0L, SEEK_END);
-  long int sz = ftell(arq);
+int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
+  if(arq == NULL || reg == NULL || nseq < 0) return 0;
 
-  // Devolve ponteiro
-  fseek(fp, 0L, SEEK_SET);
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
 
-  return sz;
-}
+  // Se nseq eh maior ou igual a rqtd, invalido
+  if(nseq >= rqtd) return 0;
 
-int ultimo_nseq(FILE *arq) {
-  // O ultimo nseq = ceil(tamanho_arquivo/sizeof(struct registro))
-  long int size = file_size(arq);
-  float fultimo = size / sizeof(struct registro);
-  int ultimo = (int)fultimo;
-  if (fultimo - (int)fultimo > 0) {
-      ultimo++;
+    // Seta stream para o registro nseq
+  fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
+
+  struct registro registro;
+  if(!fread(&registro, sizeof(struct registro), 1, arq)) return 0;
+
+  // Faz uma copia do registro retirado
+  *reg = registro;
+
+  entry_number_t offset;
+  size_t size_registro = sizeof(struct registro);
+
+  while(!feof(arq)){
+    fread(&registro, size_registro, 1, arq);
+    
+    registro.nseq -= 1;
+
+    offset -= size_registro;
+    fseek(arq, offset, SEEK_CUR);
+
+    fwrite(&registro, size_registro, 1, arq);
+
+    offset += 2 * size_registro;
   }
 
-  return ultimo;
+  // Truncate p/ remover os bytes remanescentes
+  memory_size_t novo_tamanho = FILE_SIZE(arq) - size_registro;
+  ftruncate(fileno(arq), novo_tamanho);
+
+  return 1;
+}
+
+int DELETE_RANDOM(FILE *arq, Registro reg){
+  if(arq == NULL || reg == NULL) return 0;
+
+  // Acha a quantidade de registro no momento
+  entry_number_t rqtd;
+  FILE_REG_NUM(arq, &rqtd);
+
+  if(!SEED_SETTED) SEET_SEED_();
+
+  // Pega um aleatorio em [0..1] (MersenneTwister)
+  MTRand r = seedRand(SEED_SETTED);
+  getRand(&r);
+  
+  // Acha nseq aleatorio
+  entry_number_t nseq = floor((rqtd - 1) * r);
+
+  // Delete um registro aleatorio
+  DELETE_REG(arq, nseq, reg);
+
+  return 1;
+}
+
+int FILE_REG_NUM(FILE *arq, entry_number_t* rnum){
+  if(arq == NULL || rnum == NULL) return 0;
+
+  entry_number_t seek = ftell(arq);
+
+  fseek(arq, 0, SEEK_END);
+  *nqtd = ftell(arq) / sizeof(struct registro);
+  fseek(arq, 0, seek);
+
+  return 1;
+}
+
+
+int FILE_SIZE(FILE *arq, memory_size_t *arq_size){
+  if(arq == NULL || arq_size == NULL) return 0;
+
+  entry_number_t rnum;
+  FILE_REG_NUM(arq, &rnum);
+  *arq_size = rnum * sizeof(struct registro);
+
+  return 1;
 }
