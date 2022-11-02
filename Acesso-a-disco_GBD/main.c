@@ -4,8 +4,8 @@
 
 int main()
 {
-    FILE * fp;
-    fp = CREATE_HEAP_FILE(2);
-    printf("Hello world!\n");
+    memory_size_t gigas = 2;
+    printf("%llu", gigas * G);
+    
     return 0;
 }
