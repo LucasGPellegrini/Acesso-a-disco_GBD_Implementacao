@@ -17,7 +17,8 @@ int ISRT_AT_END(FILE *arq); // OK
 int UPDATE_REG(FILE *arq, Registro reg); // OK
 int UPDATE_RANDOM(FILE *arq, Registro reg); // OK
 int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg); // OK
-int DELETE_RANDOM(FILE *arq, Registro reg); 
+int DELETE_RANDOM(FILE *arq, Registro reg); // OK
+int CALC_SIZE_RAM(int ram_size, entry_number_t *rnum);
 
 // Quantidade de registros atualmente no arquivo
 int FILE_REG_NUM(FILE *arq, entry_number_t *rnum); // OK?

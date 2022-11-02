@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include "size.h"
 #include "registro.h"
 #include "mtwister.h"
@@ -84,10 +87,10 @@ int READ_RANDOM(FILE *arq, Registro reg){
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
   MTRand r = seedRand(SEED_SETTED);
-  getRand(&r);
+  double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * r);
+  entry_number_t nseq = floor((rqtd - 1) * rn);
 
   // Le um registro aleatorio
   READ_REG(arq, nseq, reg);
@@ -99,7 +102,7 @@ int ISRT_AT_END(FILE *arq){
   if(arq == NULL) return 0;
 
   // Seta stream para o ultimo registro
-  fseek(arq, - sizeof(struct registro), SEEK_END);
+  fseek(arq, -(long int)sizeof(struct registro), SEEK_END);
 
   // le o ultimo registro
   struct registro reg;
@@ -115,7 +118,7 @@ int ISRT_AT_END(FILE *arq){
 }
 
 int UPDATE_REG(FILE *arq, Registro reg){
-  if(arq == NULL || reg == NULL || nseq < 0) return 0;
+  if(arq == NULL || reg == NULL || reg->nseq < 0) return 0;
 
   // Acha a quantidade de registro no momento
   entry_number_t rqtd;
@@ -143,10 +146,10 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
   MTRand r = seedRand(SEED_SETTED);
-  getRand(&r);
+  double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * r);
+  entry_number_t nseq = floor((rqtd - 1) * rn);
 
   // Registro aleatorio
   reg->nseq = nseq;
@@ -194,7 +197,9 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
   }
 
   // Truncate p/ remover os bytes remanescentes
-  memory_size_t novo_tamanho = FILE_SIZE(arq) - size_registro;
+  memory_size_t novo_tamanho;
+  FILE_SIZE(arq, &novo_tamanho);
+  novo_tamanho -= size_registro;
   ftruncate(fileno(arq), novo_tamanho);
 
   return 1;
@@ -211,13 +216,24 @@ int DELETE_RANDOM(FILE *arq, Registro reg){
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
   MTRand r = seedRand(SEED_SETTED);
-  getRand(&r);
+  double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * r);
+  entry_number_t nseq = floor((rqtd - 1) * rn);
 
   // Delete um registro aleatorio
   DELETE_REG(arq, nseq, reg);
+
+  return 1;
+}
+
+int CALC_SIZE_RAM(int ram_size, entry_number_t *rnum){
+  if(ram_size <= 0 || rnum == NULL) return 0;
+
+  size_t sz_reg = sizeof(struct registro);
+
+  // Se resto != 0, soma 1, caso contrario nao
+  *rnum = (ram_size * G) % sz_reg ? (ram_size * G) / sz_reg + 1 : (ram_size * G) / sz_reg;
 
   return 1;
 }
@@ -228,7 +244,7 @@ int FILE_REG_NUM(FILE *arq, entry_number_t* rnum){
   entry_number_t seek = ftell(arq);
 
   fseek(arq, 0, SEEK_END);
-  *nqtd = ftell(arq) / sizeof(struct registro);
+  *rnum = ftell(arq) / sizeof(struct registro);
   fseek(arq, 0, seek);
 
   return 1;
