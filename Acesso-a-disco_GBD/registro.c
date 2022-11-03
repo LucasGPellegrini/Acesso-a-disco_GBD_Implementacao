@@ -171,7 +171,7 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
   // Se nseq eh maior ou igual a rqtd, invalido
   if(nseq >= rqtd) return 0;
 
-    // Seta stream para o registro nseq
+  // Seta stream para o registro nseq
   fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
 
   struct registro registro;
@@ -183,24 +183,18 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
   entry_number_t offset;
   size_t size_registro = sizeof(struct registro);
 
-  while(!feof(arq)){
-    fread(&registro, size_registro, 1, arq);
-    
-    registro.nseq -= 1;
+  
+  printf("\nRegistro ''removido'':\n");
+  printf("NSEQ: %lu\n", registro.nseq);
+  printf("TEXT: %s\n", registro.text);
 
-    offset -= size_registro;
-    fseek(arq, offset, SEEK_CUR);
+  registro.nseq = ULONG_MAX;
 
-    fwrite(&registro, size_registro, 1, arq);
+  fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
 
-    offset += 2 * size_registro;
-  }
+  fwrite(&registro, struct_size, 1, ptr);
 
-  // Truncate p/ remover os bytes remanescentes
-  memory_size_t novo_tamanho;
-  FILE_SIZE(arq, &novo_tamanho);
-  novo_tamanho -= size_registro;
-  ftruncate(fileno(arq), novo_tamanho);
+  rewind(arq);
 
   return 1;
 }
@@ -219,7 +213,7 @@ int DELETE_RANDOM(FILE *arq, Registro reg){
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * rn);
+  entry_number_t nseq = (rqtd - 1) * rn;
 
   // Delete um registro aleatorio
   DELETE_REG(arq, nseq, reg);
