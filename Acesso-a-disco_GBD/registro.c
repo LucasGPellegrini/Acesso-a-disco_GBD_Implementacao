@@ -90,7 +90,7 @@ int READ_RANDOM(FILE *arq, Registro reg){
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * rn);
+  entry_number_t nseq = (rqtd - 1) * rn;
 
   // Le um registro aleatorio
   READ_REG(arq, nseq, reg);
@@ -149,14 +149,14 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
-  entry_number_t nseq = floor((rqtd - 1) * rn);
+  entry_number_t nseq = (rqtd - 1) * rn;
 
   // Registro aleatorio
   reg->nseq = nseq;
   RANDOM_REG_(reg->text);
 
   // Update um registro aleatorio
-  READ_REG(arq, nseq, reg);
+  UPDATE_REG(arq, nseq, reg);
 
   return 1;
 }
@@ -227,14 +227,10 @@ int DELETE_RANDOM(FILE *arq, Registro reg){
   return 1;
 }
 
-int CALC_SIZE_RAM(int ram_size, entry_number_t *rnum){
+int CALC_SIZE_RAM(int ram_size, int ratio, entry_number_t *rnum){
   if(ram_size <= 0 || rnum == NULL) return 0;
 
-  size_t sz_reg = sizeof(struct registro);
-
-  // Se resto != 0, soma 1, caso contrario nao
-  *rnum = (ram_size * G) % sz_reg ? (ram_size * G) / sz_reg + 1 : (ram_size * G) / sz_reg;
-
+  *rnum = ratio * (((ram_size * G) / sizeof(struct registro)) + 1);
   return 1;
 }
 

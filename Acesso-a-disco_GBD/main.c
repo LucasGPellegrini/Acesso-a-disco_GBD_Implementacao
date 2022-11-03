@@ -47,7 +47,7 @@ int main()
           case 1:
             printf("Entre com o tamanho da RAM (em GBs): ");
             scanf("%d", &t);
-            if(!CALC_SIZE_RAM(t, &nro_registros)){
+            if(!CALC_SIZE_RAM(t, 5, &nro_registros)){
                 printf("Valor invalido.\n\n");
                 break;
             }
