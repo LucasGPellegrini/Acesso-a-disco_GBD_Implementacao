@@ -4,6 +4,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <sys/types.h>
+
 #include "size.h"
 #include "registro.h"
 #include "mtwister.h"

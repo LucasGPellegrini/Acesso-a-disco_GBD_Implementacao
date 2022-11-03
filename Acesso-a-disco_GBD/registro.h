@@ -1,8 +1,12 @@
 #ifndef REGISTRO_H_INCLUDED
 #define REGISTRO_H_INCLUDED
 
-#include "size.h"
 #pragma pack(1)
+
+#define TEXT_SIZE 42
+
+typedef unsigned long long int memory_size_t;
+typedef unsigned long int entry_number_t;
 
 struct registro{
   entry_number_t nseq;

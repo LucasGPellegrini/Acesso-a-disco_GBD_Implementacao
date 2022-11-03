@@ -1,12 +1,8 @@
 #ifndef SIZE_H_INCLUDED
 #define SIZE_H_INCLUDED
 
-#define TEXT_SIZE 42
-
 #include <limits.h> // ULONG_MAX
-
-typedef unsigned long long int memory_size_t;
-typedef unsigned long int entry_number_t;
+#include "registro.h"
 
 const memory_size_t K = 1024;
 const memory_size_t M = 1048576;
