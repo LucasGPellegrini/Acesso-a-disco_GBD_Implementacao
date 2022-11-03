@@ -156,7 +156,7 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
   RANDOM_REG_(reg->text);
 
   // Update um registro aleatorio
-  UPDATE_REG(arq, nseq, reg);
+  UPDATE_REG(arq, reg);
 
   return 1;
 }
@@ -192,7 +192,7 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
 
   fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
 
-  fwrite(&registro, struct_size, 1, ptr);
+  fwrite(&registro, sizeof(struct registro), 1, arq);
 
   rewind(arq);
 
