@@ -180,10 +180,6 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
 
   // Faz uma copia do registro retirado
   *reg = registro;
-
-  entry_number_t offset;
-  size_t size_registro = sizeof(struct registro);
-
   
   printf("\nRegistro ''removido'':\n");
   printf("NSEQ: %lu\n", registro.nseq);
