@@ -27,7 +27,7 @@ void RANDOM_REG_(char* reg_text){
 int CREATE_HEAP_FILE(entry_number_t nro_registros){
   // Abre arquivo (escrita)
   FILE *fp;
-  fp = fopen("arquivo.txt", "w");
+  fp = fopen("arquivo", "wb");
   if(fp == NULL) return 0;
 
   if(!SEED_SETTED) SEET_SEED_();
@@ -41,7 +41,7 @@ int CREATE_HEAP_FILE(entry_number_t nro_registros){
     // Insere registro no arquivo
     if(!fwrite(&reg, sizeof(struct registro), 1, fp)){
       fclose(fp);
-      remove("arquivo.txt");
+      remove("arquivo");
       return 0;
     }
   }
@@ -53,7 +53,7 @@ int CREATE_HEAP_FILE(entry_number_t nro_registros){
 
 
 int READ_REG(FILE *arq, entry_number_t nseq, Registro reg){
-  if(arq == NULL || reg == NULL || nseq < 0) return 0;
+  if(arq == NULL) return 0;
 
   // Acha a quantidade de registro no momento
   entry_number_t rqtd;
@@ -78,7 +78,7 @@ int READ_REG(FILE *arq, entry_number_t nseq, Registro reg){
 }
 
 int READ_RANDOM(FILE *arq, Registro reg){
-  if(arq == NULL || reg == NULL) return 0;
+  if(arq == NULL) return 0;
 
   // Acha a quantidade de registro no momento
   entry_number_t rqtd;
@@ -94,9 +94,7 @@ int READ_RANDOM(FILE *arq, Registro reg){
   entry_number_t nseq = (rqtd - 1) * rn;
 
   // Le um registro aleatorio
-  READ_REG(arq, nseq, reg);
-
-  return 1;
+  return READ_REG(arq, nseq, reg);
 }
 
 int ISRT_AT_END(FILE *arq){
@@ -119,7 +117,7 @@ int ISRT_AT_END(FILE *arq){
 }
 
 int UPDATE_REG(FILE *arq, Registro reg){
-  if(arq == NULL || reg == NULL || reg->nseq < 0) return 0;
+  if(arq == NULL || reg == NULL) return 0;
 
   // Acha a quantidade de registro no momento
   entry_number_t rqtd;
@@ -163,7 +161,7 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
 }
 
 int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
-  if(arq == NULL || reg == NULL || nseq < 0) return 0;
+  if(arq == NULL || reg == NULL) return 0;
 
   // Acha a quantidade de registro no momento
   entry_number_t rqtd;
