@@ -11,10 +11,12 @@
 
 // uma chamada de seed apenas!
 int SEED_SETTED;
+MTRand r;
 
 void SEET_SEED_(){
   srand(time(NULL));
   SEED_SETTED = rand() + 1;
+  r = seedRand(SEED_SETTED);
 }
 
 
@@ -87,7 +89,6 @@ int READ_RANDOM(FILE *arq, Registro reg){
   if(!SEED_SETTED) SEET_SEED_();
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
-  MTRand r = seedRand(SEED_SETTED);
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
@@ -144,7 +145,6 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
   if(!SEED_SETTED) SEET_SEED_();
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
-  MTRand r = seedRand(SEED_SETTED);
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
@@ -177,7 +177,7 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
   // Faz uma copia do registro retirado
   *reg = registro;
 
-  registro.nseq = ULONG_MAX;
+  registro.nseq = UINT_MAX;
 
   fseek(arq, nseq * sizeof(struct registro), SEEK_SET);
 
@@ -198,7 +198,6 @@ int DELETE_RANDOM(FILE *arq, Registro reg){
   if(!SEED_SETTED) SEET_SEED_();
 
   // Pega um aleatorio em [0..1] (MersenneTwister)
-  MTRand r = seedRand(SEED_SETTED);
   double rn = genRand(&r);
   
   // Acha nseq aleatorio
@@ -238,26 +237,37 @@ int FILE_SIZE(FILE *arq, memory_size_t *arq_size){
   return 1;
 }
 
-int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages, double *time) {
+int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages) {
   if(arq == NULL || rnum_by_page <= 0) return 0;
   rewind(arq);
 
   *num_of_pages = 0; 
   *valid_registers = 0; 
-  struct registro registros[rnum_by_page];
-  clock_t inicio = clock();
-  int read = fread(registros, sizeof(struct registro), rnum_by_page, arq);
+
+  Registro buffer = (Registro) malloc(rnum_by_page * sizeof(struct registro));
+
+  int read = fread(buffer, sizeof(struct registro), rnum_by_page, arq);
 
   while(read) {
     for(int i = 0; i < read; i++) {
-      if(registros[i].nseq != ULONG_MAX) (*valid_registers)++;
+      if(buffer[i].nseq != ULONG_MAX) (*valid_registers)++;
     }
     (*num_of_pages)++;
-    read = fread(registros, sizeof(struct registro), rnum_by_page, arq);
+    read = fread(buffer, sizeof(struct registro), rnum_by_page, arq);
   }
 
-  clock_t fim = clock();
-  *time = (double)(fim - inicio) / CLOCKS_PER_SEC;
+  return 1;
+}
 
+int RANDOM_SWEEP(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_registers) {
+  if(arq == NULL || valid_registers == NULL || qtd_reg <= 0) return 0;
+
+  struct registro reg;
+  *valid_registers = 0;
+
+  for(int i = 0; i < qtd_reg; i++)
+    if(READ_RANDOM(arq, &reg))
+  	  if(reg.nseq != ULONG_MAX) (*valid_registers)++;
+  
   return 1;
 }
