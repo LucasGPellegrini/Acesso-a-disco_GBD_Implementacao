@@ -16,12 +16,14 @@
 #endif
 
 #define TRUE 1
-#define MAXOP 6
+#define MAXOP 7
 
 int main()
 {
   int t, op;
   entry_number_t nro_registros;
+  struct registro reg;
+  int blocks_sizes[4] = {1, 1000, 10000, 100000};
 
   do{
       do{
@@ -31,7 +33,8 @@ int main()
           printf(" [3] Inserir Registro Aleatório (Final).\n");
           printf(" [4] Atualizar Registro Aleatório.\n");
           printf(" [5] Deletar Registro Aleatório.\n");
-          printf(" [6] Sair.\n");
+          printf(" [6] Experimentos com varredura sequencial.\n");
+          printf(" [7] Sair.\n");
           printf("\nDigite uma das opcoes: ");
           
           scanf("%d", &op);
@@ -48,7 +51,6 @@ int main()
       }
       
       switch(op){
-      	struct registro reg;
       	case 1:
 	        printf("Entre com o tamanho da RAM (em GBs): ");
 	        scanf("%d", &t);
@@ -105,7 +107,20 @@ int main()
    			printf("TEXT: %s\n", reg.text);
    			printf("Registro deletado com sucesso!\n\n");
    			break;
-   			
+        case 6:    
+   			for(int i = 0; i < 4; i++) {
+                entry_number_t valid_registers;
+                int num_of_pages;
+                double time;
+
+                if(SEQUENTIAL_SWEEP(fopen("arquivo", "rb"), blocks_sizes[i], &valid_registers, &num_of_pages, &time)) {
+                    printf("VARREDURA SEQUENCIAL - BLOCOS DE %d REGISTRO(s)\n\n", blocks_sizes[i]);
+                    printf("Registros validos: %lu\n", valid_registers);
+   			        printf("Numero de paginas lidas: %d\n", num_of_pages);
+   			        printf("Tempo para processamento: %lf\n\n", time);
+                }
+            }
+            break;
       }
 
   } while(op != MAXOP);

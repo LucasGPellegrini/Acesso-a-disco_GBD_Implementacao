@@ -237,3 +237,27 @@ int FILE_SIZE(FILE *arq, memory_size_t *arq_size){
 
   return 1;
 }
+
+int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages, double *time) {
+  if(arq == NULL || rnum_by_page <= 0) return 0;
+  rewind(arq);
+
+  *num_of_pages = 0; 
+  *valid_registers = 0; 
+  struct registro registros[rnum_by_page];
+  clock_t inicio = clock();
+  int read = fread(registros, sizeof(struct registro), rnum_by_page, arq);
+
+  while(read) {
+    for(int i = 0; i < read; i++) {
+      if(registros[i].nseq != ULONG_MAX) (*valid_registers)++;
+    }
+    (*num_of_pages)++;
+    read = fread(registros, sizeof(struct registro), rnum_by_page, arq);
+  }
+
+  clock_t fim = clock();
+  *time = (double)(fim - inicio) / CLOCKS_PER_SEC;
+
+  return 1;
+}
