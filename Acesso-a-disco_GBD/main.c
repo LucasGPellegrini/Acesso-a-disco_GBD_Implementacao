@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "registro.h"
 
 // checa para saber se é windows OS
@@ -16,14 +17,27 @@
 #endif
 
 #define TRUE 1
-#define MAXOP 7
+#define MAXOP 8
+
+
+// Preambulo :)
+int tempo_seq_sweep(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages, double *time);
+int tempo_rnd_sweep(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_registers, double *time);
 
 int main()
 {
   int t, op;
-  entry_number_t nro_registros;
+  entry_number_t nro_registros, nro_rnd_sweep;
   struct registro reg;
-  int blocks_sizes[4] = {1, 1000, 10000, 100000};
+  int blocks_sizes[4] = {1, 1000, 10000, 1000000};
+
+  // case 6:
+  entry_number_t valid_registers;
+  int i;
+  int num_of_pages;
+  double time;
+  // case 6
+
 
   do{
       do{
@@ -33,8 +47,9 @@ int main()
           printf(" [3] Inserir Registro Aleatório (Final).\n");
           printf(" [4] Atualizar Registro Aleatório.\n");
           printf(" [5] Deletar Registro Aleatório.\n");
-          printf(" [6] Experimentos com varredura sequencial.\n");
-          printf(" [7] Sair.\n");
+          printf(" [6] Experimentos com Varredura Sequencial.\n");
+          printf(" [7] Experimentos com Leitura Aleatoria.\n");
+          printf(" [8] Sair.\n");
           printf("\nDigite uma das opcoes: ");
           
           scanf("%d", &op);
@@ -73,7 +88,7 @@ int main()
     			break;
       		}
 
-      		printf("NSEQ: %lu\n", reg.nseq);
+      		printf("NSEQ: %u\n", reg.nseq);
    			printf("TEXT: %s\n", reg.text);
    			printf("Registro lido com sucesso!\n\n");
    			break;
@@ -92,7 +107,7 @@ int main()
     			break;
       		}
 
-      		printf("NSEQ: %lu\n", reg.nseq);
+      		printf("NSEQ: %u\n", reg.nseq);
    			printf("TEXT: %s\n", reg.text);
    			printf("Registro atualizado com sucesso!\n\n");
    			break;
@@ -103,28 +118,79 @@ int main()
     			break;
       		}
 
-      		printf("NSEQ: %lu\n", reg.nseq);
+      		printf("NSEQ: %u\n", reg.nseq);
    			printf("TEXT: %s\n", reg.text);
    			printf("Registro deletado com sucesso!\n\n");
    			break;
-        case 6:    
-   			for(int i = 0; i < 4; i++) {
-                entry_number_t valid_registers;
-                int num_of_pages;
-                double time;
+      case 6:
+        do {
+          printf("Tamanho de Pagina:\n\n");
+          printf(" [0] 1       Registro.\n");
+          printf(" [1] 1000    Registros.\n");
+          printf(" [2] 10000   Registros.\n");
+          printf(" [3] 1000000 Registros.\n");
 
-                if(SEQUENTIAL_SWEEP(fopen("arquivo", "rb"), blocks_sizes[i], &valid_registers, &num_of_pages, &time)) {
-                    printf("VARREDURA SEQUENCIAL - BLOCOS DE %d REGISTRO(s)\n\n", blocks_sizes[i]);
-                    printf("Registros validos: %lu\n", valid_registers);
-   			        printf("Numero de paginas lidas: %d\n", num_of_pages);
-   			        printf("Tempo para processamento: %lf\n\n", time);
-                }
-            }
-            break;
+          scanf("%d", &i);
+        }while(i < 0 || i > 3);
+
+        if(tempo_seq_sweep(fopen("arquivo", "rb"), blocks_sizes[i], &valid_registers, &num_of_pages, &time)) {
+          printf("VARREDURA SEQUENCIAL - BLOCOS DE %d REGISTRO(s)\n\n", blocks_sizes[i]);
+          printf("Registros validos: %u\n", valid_registers);
+          printf("Numero de paginas lidas: %d\n", num_of_pages);
+          printf("Registros invalidos: %u\n", (num_of_pages*blocks_sizes[i]) - valid_registers);
+          printf("Tempo para processamento: %lf\n\n", time);
+        }
+        break;
+      case 7:
+        nro_rnd_sweep = 0;
+        do {
+          printf("Digite a quantidade de registros a ser lida: ");
+          scanf("%u", &nro_rnd_sweep);
+        } while(nro_rnd_sweep <= 0);
+
+        if(tempo_rnd_sweep(fopen("arquivo", "rb"), nro_rnd_sweep, &valid_registers, &time)) {
+          printf("LEITURA ALEATORIA DE %d REGISTRO(s)\n\n", nro_rnd_sweep);
+          printf("Registros validos: %u\n", valid_registers);
+          printf("Registros invalidos: %u\n", (nro_rnd_sweep - valid_registers));
+          printf("Tempo para processamento: %lf\n\n", time);
+        }
+
+        break;
       }
 
   } while(op != MAXOP);
   
   system(limpar);
   return 0;
+}
+
+
+// Funcao calcular tempo SEQUENTIAL_SWEEP
+int tempo_seq_sweep(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages, double *time) {
+  struct timespec inicio, fim; 
+  clock_gettime(CLOCK_REALTIME, &inicio);
+
+  int flag = SEQUENTIAL_SWEEP(arq, rnum_by_page, valid_registers, num_of_pages);
+
+  clock_gettime(CLOCK_REALTIME, &fim);
+  long segundos = fim.tv_sec - inicio.tv_sec;
+  long nanosegs = fim.tv_nsec - inicio.tv_nsec;
+
+  *time = (double) segundos + nanosegs*1e-9;
+  return flag;
+}
+
+// Funcao calcular tempo RANDOM_SWEEP
+int tempo_rnd_sweep(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_registers, double *time) {
+  struct timespec inicio, fim; 
+  clock_gettime(CLOCK_REALTIME, &inicio);
+
+  int flag = RANDOM_SWEEP(arq, qtd_reg, valid_registers);
+
+  clock_gettime(CLOCK_REALTIME, &fim);
+  long segundos = fim.tv_sec - inicio.tv_sec;
+  long nanosegs = fim.tv_nsec - inicio.tv_nsec;
+
+  *time = (double) segundos + nanosegs*1e-9;
+  return flag;
 }
