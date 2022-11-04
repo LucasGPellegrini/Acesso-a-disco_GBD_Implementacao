@@ -155,9 +155,7 @@ int UPDATE_RANDOM(FILE *arq, Registro reg){
   RANDOM_REG_(reg->text);
 
   // Update um registro aleatorio
-  UPDATE_REG(arq, reg);
-
-  return 1;
+  return UPDATE_REG(arq, reg);
 }
 
 int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
@@ -178,10 +176,6 @@ int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg){
 
   // Faz uma copia do registro retirado
   *reg = registro;
-  
-  printf("\nRegistro ''removido'':\n");
-  printf("NSEQ: %lu\n", registro.nseq);
-  printf("TEXT: %s\n", registro.text);
 
   registro.nseq = ULONG_MAX;
 
@@ -211,9 +205,7 @@ int DELETE_RANDOM(FILE *arq, Registro reg){
   entry_number_t nseq = (rqtd - 1) * rn;
 
   // Delete um registro aleatorio
-  DELETE_REG(arq, nseq, reg);
-
-  return 1;
+  return DELETE_REG(arq, nseq, reg);
 }
 
 int CALC_SIZE_RAM(int ram_size, int ratio, entry_number_t *rnum){

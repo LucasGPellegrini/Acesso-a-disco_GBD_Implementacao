@@ -48,6 +48,7 @@ int main()
       }
       
       switch(op){
+      	struct registro reg;
       	case 1:
 	        printf("Entre com o tamanho da RAM (em GBs): ");
 	        scanf("%d", &t);
@@ -65,8 +66,6 @@ int main()
 	        break;
 
       	case 2:
-
-      		struct registro reg;
       		if(!READ_RANDOM(fopen("arquivo", "rb"), &reg)){
     			printf("Erro!\n");
     			break;
@@ -74,6 +73,39 @@ int main()
 
       		printf("NSEQ: %lu\n", reg.nseq);
    			printf("TEXT: %s\n", reg.text);
+   			printf("Registro lido com sucesso!\n\n");
+   			break;
+   			
+   		case 3:
+   			if(!ISRT_AT_END(fopen("arquivo", "rb+"))){
+   			    printf("Erro!\n");
+   				break;
+   			}
+   			printf("Registro inserido com sucesso!\n\n");
+   			break;
+
+  		case 4:
+      		if(!UPDATE_RANDOM(fopen("arquivo", "rb+"), &reg)){
+    			printf("Erro!\n");
+    			break;
+      		}
+
+      		printf("NSEQ: %lu\n", reg.nseq);
+   			printf("TEXT: %s\n", reg.text);
+   			printf("Registro atualizado com sucesso!\n\n");
+   			break;
+
+   		case 5:
+   			if(!DELETE_RANDOM(fopen("arquivo", "rb+"), &reg)){
+    			printf("Erro!\n");
+    			break;
+      		}
+
+      		printf("NSEQ: %lu\n", reg.nseq);
+   			printf("TEXT: %s\n", reg.text);
+   			printf("Registro deletado com sucesso!\n\n");
+   			break;
+   			
       }
 
   } while(op != MAXOP);
