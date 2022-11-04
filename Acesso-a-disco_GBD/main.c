@@ -129,15 +129,18 @@ int main()
           printf(" [1] 1000    Registros.\n");
           printf(" [2] 10000   Registros.\n");
           printf(" [3] 1000000 Registros.\n");
+          printf("\n Opcao: ");
 
           scanf("%d", &i);
         }while(i < 0 || i > 3);
 
-        if(tempo_seq_sweep(fopen("arquivo", "rb"), blocks_sizes[i], &valid_registers, &num_of_pages, &time)) {
+        FILE *fb = fopen("arquivo", "rb");
+        if(tempo_seq_sweep(fb, blocks_sizes[i], &valid_registers, &num_of_pages, &time)) {
+          FILE_REG_NUM(fb, &nro_registros);
           printf("VARREDURA SEQUENCIAL - BLOCOS DE %d REGISTRO(s)\n\n", blocks_sizes[i]);
           printf("Registros validos: %u\n", valid_registers);
           printf("Numero de paginas lidas: %d\n", num_of_pages);
-          printf("Registros invalidos: %u\n", (num_of_pages*blocks_sizes[i]) - valid_registers);
+          printf("Registros invalidos: %u\n", (nro_registros - valid_registers));
           printf("Tempo para processamento: %lf\n\n", time);
         }
         break;
