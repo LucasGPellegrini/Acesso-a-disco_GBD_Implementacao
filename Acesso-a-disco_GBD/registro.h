@@ -24,7 +24,8 @@ int UPDATE_RANDOM(FILE *arq, Registro reg); // OK
 int DELETE_REG(FILE *arq, entry_number_t nseq, Registro reg); // OK
 int DELETE_RANDOM(FILE *arq, Registro reg); // OK
 int CALC_SIZE_RAM(int ram_size, int ratio, entry_number_t *rnum);
-int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages, double *time);
+int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_registers, int *num_of_pages);
+int RANDOM_SWEEP(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_registers);
 
 // Quantidade de registros atualmente no arquivo
 int FILE_REG_NUM(FILE *arq, entry_number_t *rnum); // OK?
