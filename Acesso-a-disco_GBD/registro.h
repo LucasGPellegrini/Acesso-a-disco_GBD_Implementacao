@@ -3,10 +3,10 @@
 
 #pragma pack(1)
 
-#define TEXT_SIZE 42
+#define TEXT_SIZE 46
 
 typedef unsigned long long int memory_size_t;
-typedef unsigned long int entry_number_t;
+typedef unsigned int entry_number_t;
 
 struct registro{
   entry_number_t nseq;
