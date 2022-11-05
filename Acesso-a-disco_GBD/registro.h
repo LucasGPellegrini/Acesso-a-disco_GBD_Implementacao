@@ -9,8 +9,8 @@ typedef unsigned long long int memory_size_t;
 typedef unsigned int entry_number_t;
 
 struct registro{
-  entry_number_t nseq;
-  char text[TEXT_SIZE];
+	entry_number_t nseq;
+	char text[TEXT_SIZE];
 };
 
 typedef struct registro* Registro;
