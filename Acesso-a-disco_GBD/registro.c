@@ -248,7 +248,7 @@ int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_register
 
   while(read) {
     for(int i = 0; i < read; i++) {
-      if(buffer[i].nseq != ULONG_MAX) (*valid_registers)++;
+      if(buffer[i].nseq != UINT_MAX) (*valid_registers)++;
     }
     (*num_of_pages)++;
     read = fread(buffer, sizeof(struct registro), rnum_by_page, arq);
@@ -265,7 +265,7 @@ int RANDOM_SWEEP(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_regist
 
   for(int i = 0; i < qtd_reg; i++)
     if(READ_RANDOM(arq, &reg))
-  	  if(reg.nseq != ULONG_MAX) (*valid_registers)++;
+  	  if(reg.nseq != UINT_MAX) (*valid_registers)++;
   
   return 1;
 }
