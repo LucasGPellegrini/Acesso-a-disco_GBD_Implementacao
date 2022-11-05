@@ -17,7 +17,7 @@
 #endif
 
 #define TRUE 1
-#define MAXOP 8
+#define MAXOP 9
 
 
 // Preambulo :)
@@ -27,7 +27,7 @@ int tempo_rnd_sweep(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_reg
 int main()
 {
   int t, op;
-  entry_number_t nro_registros, nro_rnd_sweep;
+  entry_number_t nro_registros, nro_rnd_sweep, rnum_100KB;
   struct registro reg;
   int blocks_sizes[4] = {1, 1000, 10000, 1000000};
 
@@ -49,7 +49,8 @@ int main()
           printf(" [5] Deletar Registro Aleatório.\n");
           printf(" [6] Experimentos com Varredura Sequencial.\n");
           printf(" [7] Experimentos com Leitura Aleatoria.\n");
-          printf(" [8] Sair.\n");
+          printf(" [8] Gerar arquivo com os primeiros 100KB do arquivo original.\n");
+          printf(" [9] Sair.\n");
           printf("\nDigite uma das opcoes: ");
           
           scanf("%d", &op);
@@ -159,6 +160,15 @@ int main()
         }
 
         break;
+      case 8:      
+   			if(!GENERATE_FIRST_100KB(fopen("arquivo", "rb"), &rnum_100KB)){
+    			printf("Erro!\n");
+    			break;
+      	}
+
+      	printf("Arquivo com os primeiros 100KB criado com sucesso!\n");
+        printf("Quantidade de registros: %u\n\n", rnum_100KB);
+   			break;
       }
 
   } while(op != MAXOP);

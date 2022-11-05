@@ -19,7 +19,6 @@ void SEET_SEED_(){
   r = seedRand(SEED_SETTED);
 }
 
-
 void RANDOM_REG_(char* reg_text){
   char diff = 'Z' - 'A';
   for(int i = 0; i < TEXT_SIZE; i++)
@@ -226,7 +225,6 @@ int FILE_REG_NUM(FILE *arq, entry_number_t* rnum){
   return 1;
 }
 
-
 int FILE_SIZE(FILE *arq, memory_size_t *arq_size){
   if(arq == NULL || arq_size == NULL) return 0;
 
@@ -269,5 +267,32 @@ int RANDOM_SWEEP(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_regist
     if(READ_RANDOM(arq, &reg))
   	  if(reg.nseq != ULONG_MAX) (*valid_registers)++;
   
+  return 1;
+}
+
+int GENERATE_FIRST_100KB(FILE *arq, entry_number_t *rnum) {
+  if(arq == NULL) return 0;
+  // Abre arquivo (escrita)
+  FILE *first_100KB;
+  first_100KB = fopen("first_100KB", "wb");
+  if(first_100KB == NULL) return 0;
+
+  entry_number_t rnum_to_copy = 100000 / sizeof(struct registro);
+  Registro buffer = (Registro) malloc(rnum_to_copy * sizeof(struct registro));
+  int read = fread(buffer, sizeof(struct registro), rnum_to_copy, arq);
+
+  if(read) {
+    for(int i = 0; i < read; i++) {
+      if(!fwrite(&buffer[i], sizeof(struct registro), 1, first_100KB)) {
+        fclose(first_100KB);
+        remove("first_100KB");
+        return 0;
+      }
+    }
+  }
+
+  FILE_REG_NUM(first_100KB, rnum);
+  fclose(first_100KB);
+
   return 1;
 }

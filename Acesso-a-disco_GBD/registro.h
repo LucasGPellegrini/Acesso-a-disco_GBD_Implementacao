@@ -28,9 +28,12 @@ int SEQUENTIAL_SWEEP(FILE *arq, int rnum_by_page, entry_number_t *valid_register
 int RANDOM_SWEEP(FILE *arq, entry_number_t qtd_reg, entry_number_t *valid_registers);
 
 // Quantidade de registros atualmente no arquivo
-int FILE_REG_NUM(FILE *arq, entry_number_t *rnum); // OK?
+int FILE_REG_NUM(FILE *arq, entry_number_t *rnum); 
 
 // Tamanho do arquivo
-int FILE_SIZE(FILE *arq, memory_size_t *arq_size); // OK?
+int FILE_SIZE(FILE *arq, memory_size_t *arq_size);
+
+// Gerar arquivo com os primeiros 100KB do arquivo binário de 5x o tamanho da RAM
+int GENERATE_FIRST_100KB(FILE *arq, entry_number_t *rnum);
 
 #endif // REGISTRO_H_INCLUDED
