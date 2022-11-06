@@ -278,7 +278,7 @@ int GENERATE_FIRST_100KB(FILE *arq, entry_number_t *rnum) {
 	first_100KB = fopen("first_100KB", "wb");
 	if(first_100KB == NULL) return 0;
 
-	entry_number_t rnum_to_copy = 100000 / sizeof(struct registro);
+	entry_number_t rnum_to_copy = 100 * K / sizeof(struct registro) + 1;
 	Registro buffer = (Registro) malloc(rnum_to_copy * sizeof(struct registro));
 	int read = fread(buffer, sizeof(struct registro), rnum_to_copy, arq);
 
