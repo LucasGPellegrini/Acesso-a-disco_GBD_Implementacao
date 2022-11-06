@@ -67,6 +67,7 @@ int main()
 				break;
 				
 			case 1:
+      {
 				int t;
 	       		printf("Entre com o tamanho da RAM (em GBs): ");
 	       		scanf("%d", &t);
@@ -83,6 +84,7 @@ int main()
 
 	       		printf("Arquivo criado com sucesso!\n\n");
 	       		break;
+      }
 
 			case 2:
 	    		if(!READ_RANDOM(fopen("arquivo", "rb"), &reg)){
@@ -123,6 +125,7 @@ int main()
 	 			break;
 	 			
 			case 6:
+      {
 				int i, num_of_pages, block_sizes[4] = {1, 1000, 10000, 1000000};
 				
 				do {
@@ -146,8 +149,10 @@ int main()
 					printf("Tempo para processamento: %lf\n\n", time);
 				}
 				break;
+      }
 				
 			case 7:
+      {
 				entry_number_t nro_rnd_sweep = 0;
 				do {
 					printf("Digite a quantidade de registros a ser lida: ");
@@ -161,8 +166,10 @@ int main()
 					printf("Tempo para processamento: %lf\n\n", time);
 				}
 				break;
+      }
 				
 			case 8:
+      {
 				entry_number_t rnum_100KB;     
 				if(!GENERATE_FIRST_100KB(fopen("arquivo", "rb"), &rnum_100KB)){
 					printf("Ocorreu algum erro ao gerar o arquivo com os primeiros 100KB do arquivo original.\n");
@@ -172,11 +179,12 @@ int main()
 				printf("Arquivo com os primeiros 100KB criado com sucesso!\n");
 				printf("Quantidade de registros: %u\n\n", rnum_100KB);
 				break;
+      }
 
 			default:
 				printf("Opcao invalida! Digite novamente!\n\n");
 				break;
-			}
+		}
 				
 	} while(op != MAXOP);
 
